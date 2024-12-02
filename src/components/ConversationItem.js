@@ -17,12 +17,12 @@ const ConversationItem = ({props}) => {
       }
     })
     name=user[0].name;
-    latestMessage=props.latestMessage.content
+    latestMessage=props.latestMessage
   }
 
   if(props.isGroupChat){
     name=props.chatName
-    latestMessage=props.latestMessage.content
+    latestMessage=props.latestMessage
   }
   return (
     <div className={"conversation-container"+((lightTheme)?"":" dark")} onClick={()=>{navigate(`chat/${props._id}`)}}>
