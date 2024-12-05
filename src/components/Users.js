@@ -24,14 +24,14 @@ const Users = () => {
   }
 
   const createChat=async (user)=>{
-    console.log("Creating chat with ", user.name);
+    // console.log("Creating chat with ", user.name);
     try{
       const otherUserId=user._id
-      console.log(otherUserId)
+      // console.log(otherUserId)
       const {data}=await axios.post("/chat/accessChat", {
         otherUserId:otherUserId,
       })
-      console.log(data)
+      // console.log(data)
       setRefresh(!refresh);
     }
     catch(err){
@@ -43,7 +43,7 @@ const Users = () => {
     async function fetchUsers() {
       try {
         const { data } = await axios.get("/user/fetchUsers");
-        console.log(data);
+        // console.log(data);
         setUsers(data);
       } catch (err) {
         alert(err.response.data.message);

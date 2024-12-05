@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import "./styles.css";
 import logo from "../Images/chat-512.png";
 import { Button, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,10 +13,10 @@ const Login = () => {
   const loginHandler = async () => {
     const name = nameRef.current.value;
     const password = passwordRef.current.value;
-    console.log(name)
+    // console.log(name)
     try {
       const { data } = await axios.post("login", { name, password });
-      console.log(data);
+      // console.log(data);
       // SET THE DATA TO REDUX
       // dispatch({ type: "SET_USER", payload: data.user });
       sessionStorage.setItem("userData", JSON.stringify(data.user));

@@ -22,7 +22,7 @@ const Groups = () => {
   }
 
   const addGroup = async (group) => {
-    console.log("Creating chat with ", group.chatName);
+    // console.log("Creating chat with ", group.chatName);
     try {
       const chatId = group._id;
       // console.log(otherUserId);
@@ -30,7 +30,7 @@ const Groups = () => {
         chatId: chatId,
         userId: userData._id,
       });
-      console.log(data);
+      // console.log(data);
       setRefresh(!refresh);
     } catch (err) {
       alert(err.response.data.message);
@@ -41,7 +41,7 @@ const Groups = () => {
     async function fetchGroups() {
       try {
         const { data } = await axios.get("/chat/fetchGroups");
-        console.log(data);
+        // console.log(data);
         setGroups(data);
       } catch (err) {
         alert(err.response.data.message);

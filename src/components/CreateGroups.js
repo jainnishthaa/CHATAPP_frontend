@@ -1,5 +1,6 @@
 import { IconButton } from '@mui/material'
 import React, { useContext, useRef } from 'react';
+import "./styles.css";
 import DoneOutlineRoundedIcon from '@mui/icons-material/DoneOutlineRounded';
 import { useSelector } from 'react-redux';
 import { myContext } from "./MainContainer";
@@ -16,11 +17,11 @@ const CreateGroups = () => {
   const createGroup=async()=>{
     try{
       const name=groupnameRef.current.value;
-      console.log(name);
+      // console.log(name);
       const {data}=await axios.post("chat/createGroups",{
         name:name
       })
-      console.log(data);
+      // console.log(data);
       navigate("/app/groups");
       setRefresh(!refresh);
     }

@@ -23,20 +23,20 @@ const SideBar = () => {
   const lightTheme = useSelector((state) => state.themeKey);
   // console.log(lightTheme);
   const { refresh, setRefresh } = useContext(myContext);
-  console.log("Context API : refresh : ", refresh);
+  // console.log("Context API : refresh : ", refresh);
   const [conversations, setConversations] = useState([]);
   const userData = JSON.parse(sessionStorage.getItem("userData"));
   const nav = useNavigate();
   if (!userData) {
     console.log("User not Authenticated");
-    nav("/");
+    navigate("/");
   }
   const user = userData.data;
   useEffect(() => {
     const fetchConversations = async () => {
       try {
         const { data } = await axios.get("/chat/fetchChat");
-        console.log(data);
+        // console.log(data);
         setConversations(data);
       } catch (err) {
         alert(err.response.data.message);
@@ -44,6 +44,17 @@ const SideBar = () => {
     };
     fetchConversations();
   }, [refresh]);
+
+  const logoutHandler = async () => {
+    try {
+      const { data } = await axios.get("/logout");
+      console.log(data);
+      sessionStorage.removeItem("userData");
+      navigate("/login");
+    } catch (err) {
+      alert(err.response.data.message);
+    }
+  };
 
   return (
     <div className={"sidebar-container" + (lightTheme ? "" : " dark")}>
@@ -92,12 +103,7 @@ const SideBar = () => {
               <LightModeIcon className={"icon" + (lightTheme ? "" : " dark")} />
             )}
           </IconButton>
-          <IconButton
-            onClick={() => {
-              sessionStorage.removeItem("userData");
-              navigate("/");
-            }}
-          >
+          <IconButton onClick={logoutHandler}>
             <ExitToAppIcon className={"icon" + (lightTheme ? "" : " dark")} />
           </IconButton>
         </div>
@@ -112,10 +118,8 @@ const SideBar = () => {
         />
       </div> */}
       <div className={"sb-conversation" + (lightTheme ? "" : " dark")}>
-        {conversations.map((conversation,idx) => {
-          return (
-            <ConversationItem props={conversation} key={idx} />
-          );
+        {conversations.map((conversation, idx) => {
+          return <ConversationItem props={conversation} key={idx} />;
         })}
       </div>
     </div>

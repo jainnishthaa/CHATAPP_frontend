@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import "./styles.css";
 import logo from "../Images/chat-512.png";
 import { Button, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,7 +17,7 @@ const Signup = () => {
 
     // const formdata = new FormData();
     // formdata.append('name', name);
-    // // console.log(name);
+    // console.log(name);
     // formdata.append('email', email);
     // formdata.append('password',password);
     // console.log(formdata);
@@ -26,7 +27,7 @@ const Signup = () => {
       email:email,
       password:password
     }
-    console.log(formdata);
+    // console.log(formdata);
 
 
     try {
@@ -35,7 +36,7 @@ const Signup = () => {
         //   "Content-Type": "multipart/form-data",
         // },
       );
-      console.log(data);
+      // console.log(data);
       // SET THE DATA TO REDUX
       // dispatch({ type: "SET_USER", payload: data.user });
       sessionStorage.setItem("userData", JSON.stringify(data.user));
