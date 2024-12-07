@@ -10,7 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axios";
 import { myContext} from "./MainContainer";
 import io from "socket.io-client";
-const ENDPOINT = "https://chatapp-backend-fawn.vercel.app/";
+const ENDPOINT = "https://chatapp-backend-fawn.vercel.app";
 
 let socket=undefined;
 
