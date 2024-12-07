@@ -41,8 +41,9 @@ const ChatArea = () => {
   useEffect(() => {
     if (!socket) {
       socket = io(ENDPOINT, {
-        transports: ["polling", "websocket"],
-        withCredentials: true,
+        transports: ["websocket", "polling"],
+        // query: { userId: userId },
+        path: "/socket.io",
       });
 
       socket.on("connect", () => {
