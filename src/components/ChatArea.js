@@ -8,11 +8,11 @@ import MessageSelf from "./MessageSelf";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axios";
-import { myContext} from "./MainContainer";
+import { myContext } from "./MainContainer";
 import io from "socket.io-client";
 const ENDPOINT = "https://chatapp-backend-fawn.vercel.app";
 
-let socket=undefined;
+let socket = undefined;
 
 const ChatArea = () => {
   const lightTheme = useSelector((state) => state.themeKey);
@@ -27,10 +27,9 @@ const ChatArea = () => {
   const [chatId, chat_user] = dyParams.id.split("&");
   const [socketConnectionStatus, setSocketConnectionStatus] = useState(false);
   useEffect(() => {
-    socket=undefined;
+    socket = undefined;
     setRefresh(!refresh);
-  },[])
-  
+  }, []);
 
   // console.log(userData);
   if (!userData) {
@@ -40,7 +39,10 @@ const ChatArea = () => {
 
   useEffect(() => {
     if (!socket) {
-      socket = io(ENDPOINT);
+      socket = io(ENDPOINT, {
+        transports: ["websocket"],
+        withCredentials: true,
+      });
       socket.on("connected", () => {
         setSocketConnectionStatus(true);
         console.log("Socket connected:", socket.id);
@@ -48,7 +50,7 @@ const ChatArea = () => {
       socket.emit("setup", userData);
       console.log(socketConnectionStatus);
       socket.on("disconnect", () => {
-        socket=undefined;
+        socket = undefined;
         setSocketConnectionStatus(false);
         console.log("Socket disconnected");
       });
@@ -107,13 +109,14 @@ const ChatArea = () => {
       );
       scrollToBottom();
     };
-    if(socket){
-    socket.on("message received", handleMessageReceived);
+    if (socket) {
+      socket.on("message received", handleMessageReceived);
     }
     return () => {
-      if(socket){
-      socket.off("message received", handleMessageReceived);
-    }};
+      if (socket) {
+        socket.off("message received", handleMessageReceived);
+      }
+    };
   }, []);
 
   useEffect(() => {
