@@ -40,7 +40,7 @@ const ChatArea = () => {
   useEffect(() => {
     if (!socket) {
       socket = io(ENDPOINT, {
-        transports: ["websocket", "polling"],
+        transports: ["polling"],
         withCredentials: true,
       });
       socket.on("connected", () => {
