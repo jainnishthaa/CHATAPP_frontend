@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axios";
 import { myContext } from "./MainContainer";
 import io from "socket.io-client";
+
 const ENDPOINT = "https://chatapp-backend-fawn.vercel.app";
 
 let socket = undefined;
@@ -26,12 +27,12 @@ const ChatArea = () => {
   const dyParams = useParams();
   const [chatId, chat_user] = dyParams.id.split("&");
   const [socketConnectionStatus, setSocketConnectionStatus] = useState(false);
+
   useEffect(() => {
     socket = undefined;
     setRefresh(!refresh);
   }, []);
 
-  // console.log(userData);
   if (!userData) {
     console.log("User not Authenticated");
     navigate("/");
@@ -40,21 +41,29 @@ const ChatArea = () => {
   useEffect(() => {
     if (!socket) {
       socket = io(ENDPOINT, {
-        transports: ["polling"],
+        transports: ["polling", "websocket"],
         withCredentials: true,
       });
-      socket.on("connected", () => {
-        setSocketConnectionStatus(true);
-        console.log("Socket connected:", socket.id);
+
+      socket.on("connect", () => {
+        console.log("Socket connected");
+        setSocketConnectionStatus(true); // Set connection status to true when socket connects
       });
-      socket.emit("setup", userData);
-      console.log(socketConnectionStatus);
-      socket.on("disconnect", () => {
-        socket = undefined;
+
+      socket.on("connect_error", (err) => {
+        console.error("Connection error:", err);
+        alert("Connection failed! Please check the backend logs.");
+      });
+
+      socket.on("error", (err) => {
+        console.error("Socket error:", err);
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log("Socket disconnected:", reason);
         setSocketConnectionStatus(false);
-        console.log("Socket disconnected");
+        socket = undefined; // Reinitialize socket when disconnected
       });
-      console.log(socketConnectionStatus);
     }
   }, [refresh, userData]);
 
@@ -78,13 +87,11 @@ const ChatArea = () => {
   };
 
   const sendMessage = async () => {
-    // console.log(socketConnectionStatus);
     if (!socketConnectionStatus) {
       alert("Socket connection is not yet established.");
       return;
     }
     const content = messageRef.current.value;
-    // console.log(content);
     try {
       const { data } = await axios.post("/message", {
         content: content,
@@ -109,23 +116,23 @@ const ChatArea = () => {
       );
       scrollToBottom();
     };
+
     if (socket) {
       socket.on("message received", handleMessageReceived);
     }
+
     return () => {
       if (socket) {
         socket.off("message received", handleMessageReceived);
       }
     };
-  }, []);
+  }, [refresh, chatId]);
 
   useEffect(() => {
     const getMessages = async () => {
       try {
         const { data } = await axios.get(`/message/${chatId}`);
-        // console.log(data);
         setAllMessages(data);
-        // console.log(chatId);
         socket.emit("join chat", chatId);
         scrollToBottom();
       } catch (err) {
@@ -145,9 +152,6 @@ const ChatArea = () => {
           <p className={"con-title" + (lightTheme ? "" : " dark")}>
             {chat_user}
           </p>
-          {/* <p className={"con-timeStamp" + (lightTheme ? "" : " dark")}>
-            {props.timeStamp}
-          </p> */}
         </div>
         <IconButton onClick={leaveChat}>
           <DeleteIcon className={"icon" + (lightTheme ? "" : " dark")} />
@@ -163,7 +167,6 @@ const ChatArea = () => {
             if (sender._id === self_id) {
               return <MessageSelf props={message} key={index} />;
             } else {
-              // console.log("Someone Sent it");
               return <MessageOthers props={message} key={index} />;
             }
           })}
