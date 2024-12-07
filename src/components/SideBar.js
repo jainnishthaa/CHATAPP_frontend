@@ -30,7 +30,7 @@ const SideBar = () => {
     console.log("User not Authenticated");
     navigate("/");
   }
-  const user = userData.data;
+  // const user = userData.data;
   useEffect(() => {
     const fetchConversations = async () => {
       try {
@@ -49,8 +49,8 @@ const SideBar = () => {
       const { data } = await axios.get("/logout");
       console.log(data);
       sessionStorage.removeItem("userData");
-      setRefresh(!refresh);
       navigate("/login");
+      // setRefresh(!refresh);
     } catch (err) {
       alert(err.response.data.message);
     }

@@ -10,9 +10,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axios";
 import { myContext} from "./MainContainer";
 import io from "socket.io-client";
-const ENDPOINT = "http://localhost:4444";
+const ENDPOINT = "https://chatapp-backend-fawn.vercel.app/";
 
-let socket;
+let socket=undefined;
 
 const ChatArea = () => {
   const lightTheme = useSelector((state) => state.themeKey);
@@ -26,6 +26,11 @@ const ChatArea = () => {
   const dyParams = useParams();
   const [chatId, chat_user] = dyParams.id.split("&");
   const [socketConnectionStatus, setSocketConnectionStatus] = useState(false);
+  useEffect(() => {
+    socket=undefined;
+    setRefresh(!refresh);
+  },[])
+  
 
   // console.log(userData);
   if (!userData) {
@@ -34,9 +39,6 @@ const ChatArea = () => {
   }
 
   useEffect(() => {
-    if(socket){
-      // socket.disconnect()
-    }
     if (!socket) {
       socket = io(ENDPOINT);
       socket.on("connected", () => {
@@ -46,6 +48,7 @@ const ChatArea = () => {
       socket.emit("setup", userData);
       console.log(socketConnectionStatus);
       socket.on("disconnect", () => {
+        socket=undefined;
         setSocketConnectionStatus(false);
         console.log("Socket disconnected");
       });
@@ -65,6 +68,7 @@ const ChatArea = () => {
       });
       console.log(data);
       socket.emit("leave chat", chatId);
+      setRefresh(!refresh);
       navigate("/app/welcome");
     } catch (err) {
       alert(err.response.data.message);
