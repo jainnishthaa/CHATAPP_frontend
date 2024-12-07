@@ -26,7 +26,6 @@ const SideBar = () => {
   // console.log("Context API : refresh : ", refresh);
   const [conversations, setConversations] = useState([]);
   const userData = JSON.parse(sessionStorage.getItem("userData"));
-  const nav = useNavigate();
   if (!userData) {
     console.log("User not Authenticated");
     navigate("/");
@@ -50,6 +49,7 @@ const SideBar = () => {
       const { data } = await axios.get("/logout");
       console.log(data);
       sessionStorage.removeItem("userData");
+      setRefresh(!refresh);
       navigate("/login");
     } catch (err) {
       alert(err.response.data.message);

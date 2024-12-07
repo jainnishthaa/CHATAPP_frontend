@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import "./styles.css";
 import SideBar from "./SideBar";
 import { Outlet } from "react-router-dom";
@@ -8,9 +8,17 @@ export const myContext = createContext();
 const MainContainer = () => {
   const lightTheme = useSelector((state) => state.themeKey);
   const [refresh, setRefresh] = useState(true);
+  const userData = JSON.parse(sessionStorage.getItem("userData"));
+
+  
   return (
     <div className={"main-container" + (lightTheme ? "" : " dark")}>
-      <myContext.Provider value={{ refresh: refresh, setRefresh: setRefresh }}>
+      <myContext.Provider
+        value={{
+          refresh: refresh,
+          setRefresh: setRefresh,
+        }}
+      >
         <SideBar />
         <Outlet />
       </myContext.Provider>

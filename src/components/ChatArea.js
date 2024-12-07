@@ -8,24 +8,24 @@ import MessageSelf from "./MessageSelf";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axios";
-import { myContext } from "./MainContainer";
+import { myContext} from "./MainContainer";
 import io from "socket.io-client";
 const ENDPOINT = "http://localhost:4444";
 
 let socket;
+
 const ChatArea = () => {
   const lightTheme = useSelector((state) => state.themeKey);
-  const [socketConnectionStatus, setSocketConnectionStatus] = useState(false);
   const messagesEndRef = useRef(null);
   const messageRef = useRef(null);
   const userData = JSON.parse(sessionStorage.getItem("userData"));
   const [allMessages, setAllMessages] = useState([]);
-  const [allMessagesCopy, setAllMessagesCopy] = useState([]);
   const { refresh, setRefresh } = useContext(myContext);
   const [messageContent, setMessageContent] = useState("");
   const navigate = useNavigate();
   const dyParams = useParams();
   const [chatId, chat_user] = dyParams.id.split("&");
+  const [socketConnectionStatus, setSocketConnectionStatus] = useState(false);
 
   // console.log(userData);
   if (!userData) {
@@ -33,21 +33,57 @@ const ChatArea = () => {
     navigate("/");
   }
 
+  useEffect(() => {
+    if(socket){
+      // socket.disconnect()
+    }
+    if (!socket) {
+      socket = io(ENDPOINT);
+      socket.on("connected", () => {
+        setSocketConnectionStatus(true);
+        console.log("Socket connected:", socket.id);
+      });
+      socket.emit("setup", userData);
+      console.log(socketConnectionStatus);
+      socket.on("disconnect", () => {
+        setSocketConnectionStatus(false);
+        console.log("Socket disconnected");
+      });
+      console.log(socketConnectionStatus);
+    }
+  }, [refresh, userData]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const leaveChat = async () => {
+    try {
+      const { data } = await axios.put("/chat/groupExit", {
+        chatId: chatId,
+        userId: userData._id,
+      });
+      console.log(data);
+      socket.emit("leave chat", chatId);
+      navigate("/app/welcome");
+    } catch (err) {
+      alert(err.response.data.message);
+    }
+  };
+
   const sendMessage = async () => {
-    // if (!socketConnectionStatus) {
-    //   alert("Socket connection is not yet established.");
-    //   return;
-    // }
+    // console.log(socketConnectionStatus);
+    if (!socketConnectionStatus) {
+      alert("Socket connection is not yet established.");
+      return;
+    }
     const content = messageRef.current.value;
     // console.log(content);
     try {
       const { data } = await axios.post("/message", {
         content: content,
         chatId: chatId,
+        senderId: userData._id,
       });
       console.log(data);
       socket.emit("new message", { ...data, sender: userData });
@@ -59,37 +95,22 @@ const ChatArea = () => {
   };
 
   useEffect(() => {
-    console.log(socketConnectionStatus);
-    socket = io(ENDPOINT);
-    socket.on("connected", () => {
-      setSocketConnectionStatus(true); 
-      console.log("Socket connected:", socket.id);
-    });
-    socket.emit("setup", userData);
-
-    socket.on("disconnect", () => {
-      setSocketConnectionStatus(false);
-      console.log("Socket disconnected");
-    });
-    console.log(socketConnectionStatus);
-    // socket.on("message received", (newMessage) => {
-    //   if (!allMessages.find((message) => message._id === newMessage._id)) {
-    //     setAllMessages((prevMessages) => [...prevMessages, newMessage]);
-    //   }
-    // });
-  }, []);
-
-  useEffect(() => {
     const handleMessageReceived = (newMessage) => {
-      if (!allMessages.find((message) => message._id === newMessage._id)) {
-        setAllMessages((prevMessages) => [...prevMessages, newMessage]);
-      }
+      setAllMessages((prevMessages) =>
+        prevMessages.find((message) => message._id === newMessage._id)
+          ? prevMessages
+          : [...prevMessages, newMessage]
+      );
+      scrollToBottom();
     };
+    if(socket){
     socket.on("message received", handleMessageReceived);
+    }
     return () => {
+      if(socket){
       socket.off("message received", handleMessageReceived);
-    };
-  }, [allMessages]);
+    }};
+  }, []);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -98,15 +119,14 @@ const ChatArea = () => {
         // console.log(data);
         setAllMessages(data);
         // console.log(chatId);
+        socket.emit("join chat", chatId);
         scrollToBottom();
-        socket.emit("join chat",chatId);
-        setAllMessagesCopy(allMessages);
       } catch (err) {
         alert(err.response.data.message);
       }
     };
     getMessages();
-  }, [refresh, chatId,allMessages]);
+  }, [refresh, chatId]);
 
   return (
     <div className={"chatarea-container" + (lightTheme ? "" : " dark")}>
@@ -122,7 +142,7 @@ const ChatArea = () => {
             {props.timeStamp}
           </p> */}
         </div>
-        <IconButton>
+        <IconButton onClick={leaveChat}>
           <DeleteIcon className={"icon" + (lightTheme ? "" : " dark")} />
         </IconButton>
       </div>
